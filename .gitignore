@@ -1,0 +1,12 @@
+# Node Dependencies
+node_modules/
+**/node_modules/
+
+# Production Build Output
+dist/
+build/
+
+# Environment Variables & Keys
+.env
+.env.local
+*.log
