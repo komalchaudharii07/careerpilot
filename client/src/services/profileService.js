@@ -1,9 +1,34 @@
 import api from "./api";
 
-// Update logged-in user's profile
+
+// GET PROFILE
+export const getProfile = async () => {
+  try {
+    const response = await api("/profile");
+
+    return response;
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+      "Failed to load profile"
+    );
+  }
+};
+
+
+// UPDATE PROFILE
 export const updateProfile = async (profileData) => {
-  return await api("/auth/profile", {
-    method: "PUT",
-    body: JSON.stringify(profileData),
-  });
+  try {
+    const response = await api("/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    });
+
+    return response;
+  } catch (error) {
+    throw new Error(
+      error?.message ||
+      "Failed to update profile"
+    );
+  }
 };

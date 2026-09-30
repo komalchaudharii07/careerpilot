@@ -1,60 +1,155 @@
-export default function Testimonials() {
-  const reviews = [
-    {
-      name: "Aarav Sharma",
-      role: "Software Engineer",
-      content: "CareerPilot made updating my resume and practicing mock interviews so seamless! Got 2 offers within a month.",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-    },
-    {
-      name: "Priya Patel",
-      role: "Product Designer",
-      content: "The AI roadmap feature helped me bridge my skill gaps systematically. Highly recommended for candidates!",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-    },
-    {
-      name: "Rohan Verma",
-      role: "Data Analyst",
-      content: "The job recommendation engine matches actual skills rather than generic keywords. Game changer!",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-    },
-  ];
+const reviews = [
+  {
+    name: "Aarav Sharma",
+    role: "Software Engineer",
+    content:
+      "CareerPilot made updating my resume and practicing mock interviews so seamless. It helped me stay focused throughout my preparation.",
+    avatar:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+  },
+  {
+    name: "Priya Patel",
+    role: "Product Designer",
+    content:
+      "The AI roadmap helped me understand my skill gaps and organize my learning journey in a much more structured way.",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+  },
+  {
+    name: "Rohan Verma",
+    role: "Data Analyst",
+    content:
+      "The job recommendation experience made it easier to discover opportunities that actually aligned with my skills.",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+  },
+];
 
+export default function Testimonials() {
   return (
-    <section className="bg-slate-950 py-20 border-t border-slate-800/80">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+    <section
+      id="testimonials"
+      className="border-t border-slate-800/80 bg-slate-950 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24"
+    >
+      <div className="mx-auto max-w-7xl">
+
+        {/* HEADER */}
+        <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-14 lg:mb-16">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+            Community
+          </p>
+
+          <h2
+            className="
+              text-2xl
+              font-bold
+              tracking-tight
+              text-white
+              sm:text-3xl
+              md:text-4xl
+            "
+          >
             Loved by Job Seekers & Professionals
           </h2>
-          <p className="text-slate-400 max-w-xl mx-auto">
-            See how CareerPilot has helped tech talent level up their career path.
+
+          <p
+            className="
+              mx-auto
+              mt-4
+              max-w-xl
+              text-sm
+              leading-6
+              text-slate-400
+              sm:text-base
+              sm:leading-7
+            "
+          >
+            See how CareerPilot helps candidates build stronger resumes,
+            prepare for interviews and move towards their career goals.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {reviews.map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between"
+        {/* CARDS */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-5
+            sm:grid-cols-2
+            lg:grid-cols-3
+            lg:gap-6
+          "
+        >
+          {reviews.map((item) => (
+            <article
+              key={item.name}
+              className="
+                flex
+                min-w-0
+                flex-col
+                rounded-2xl
+                border
+                border-slate-800
+                bg-slate-900/60
+                p-5
+                transition
+                duration-300
+                hover:-translate-y-1
+                hover:border-slate-700
+                hover:bg-slate-900
+                sm:p-6
+              "
             >
-              <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                "{item.content}"
-              </p>
-              <div className="flex items-center gap-3">
+              {/* QUOTE */}
+              <div className="mb-6 flex-1">
+                <span className="text-3xl font-serif leading-none text-blue-500/60">
+                  “
+                </span>
+
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    leading-6
+                    text-slate-300
+                    sm:text-[15px]
+                    sm:leading-7
+                  "
+                >
+                  {item.content}
+                </p>
+              </div>
+
+              {/* USER */}
+              <div className="flex items-center gap-3 border-t border-slate-800 pt-5">
                 <img
                   src={item.avatar}
-                  alt={item.name}
-                  className="w-10 h-10 rounded-full object-cover border border-slate-700"
+                  alt=""
+                  className="
+                    h-10
+                    w-10
+                    shrink-0
+                    rounded-full
+                    border
+                    border-slate-700
+                    object-cover
+                  "
                 />
-                <div>
-                  <h4 className="text-white text-sm font-semibold">{item.name}</h4>
-                  <p className="text-slate-400 text-xs">{item.role}</p>
+
+                <div className="min-w-0">
+                  <h4 className="truncate text-sm font-semibold text-white">
+                    {item.name}
+                  </h4>
+
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {item.role}
+                  </p>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
+
       </div>
     </section>
   );

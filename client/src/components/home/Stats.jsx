@@ -30,10 +30,14 @@ const stats = [
 
 export default function Stats() {
   return (
-    <section className="border-y border-slate-200 bg-white px-6 py-16 sm:px-8 lg:px-10">
+    <section
+      id="stats"
+      className="border-y border-slate-800 bg-slate-950 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20"
+    >
       <div className="mx-auto max-w-7xl">
 
-        <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4 sm:divide-x sm:divide-slate-200">
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4 sm:divide-x sm:divide-slate-800">
 
           {stats.map((stat) => {
             const Icon = stat.icon;
@@ -41,17 +45,60 @@ export default function Stats() {
             return (
               <div
                 key={stat.label}
-                className="flex flex-col items-center px-4 text-center sm:px-8"
+                className="
+                  flex min-w-0
+                  flex-col items-center
+                  px-3 text-center
+                  sm:px-5
+                  lg:px-8
+                "
               >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600">
-                  <Icon size={19} strokeWidth={1.8} />
+                {/* ICON */}
+                <div
+                  className="
+                    mb-4 flex
+                    h-10 w-10 shrink-0
+                    items-center justify-center
+                    rounded-xl
+                    border border-slate-800
+                    bg-slate-900
+                    text-blue-400
+                    sm:h-11 sm:w-11
+                  "
+                >
+                  <Icon
+                    size={18}
+                    strokeWidth={1.8}
+                  />
                 </div>
 
-                <p className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                {/* VALUE */}
+                <p
+                  className="
+                    text-2xl
+                    font-bold
+                    tracking-tight
+                    text-white
+                    sm:text-3xl
+                    lg:text-4xl
+                  "
+                >
                   {stat.value}
                 </p>
 
-                <p className="mt-1.5 text-xs font-medium text-slate-500 sm:text-sm">
+                {/* LABEL */}
+                <p
+                  className="
+                    mt-1.5
+                    max-w-[130px]
+                    text-[11px]
+                    font-medium
+                    leading-5
+                    text-slate-400
+                    sm:max-w-none
+                    sm:text-sm
+                  "
+                >
                   {stat.label}
                 </p>
               </div>

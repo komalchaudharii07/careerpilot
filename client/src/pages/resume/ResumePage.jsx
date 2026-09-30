@@ -1,280 +1,615 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Upload,
   FileText,
-  ShieldCheck,
-  Sparkles,
-  CheckCircle2,
   X,
   ArrowRight,
-  Loader2,
+  Loader2
 } from "lucide-react";
+import axios from "axios";
 
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function ResumePage() {
-  const fileInputRef = useRef(null);
-  const navigate = useNavigate();
 
   const [file, setFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const handleFile = (selectedFile) => {
-    if (!selectedFile) return;
+  const [loading, setLoading] =
+    useState(false);
 
-    const allowedTypes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
+  const [dragActive, setDragActive] =
+    useState(false);
 
-    if (!allowedTypes.includes(selectedFile.type)) {
-      alert("Please upload a PDF or DOCX file.");
-      return;
+  const navigate =
+    useNavigate();
+
+
+  // ==================================================
+  // FILE VALIDATION
+  // ==================================================
+
+  const validateFile = (selectedFile) => {
+
+    if (!selectedFile) {
+      return false;
     }
 
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB.");
-      return;
+
+    // PDF only
+
+    if (
+      selectedFile.type !==
+      "application/pdf"
+    ) {
+
+      alert(
+        "Please upload a PDF resume only."
+      );
+
+      return false;
+
     }
 
-    setFile(selectedFile);
-  };
 
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
+    // 5MB limit
 
-    const droppedFile = event.dataTransfer.files?.[0];
-    handleFile(droppedFile);
-  };
+    const maxSize =
+      5 * 1024 * 1024;
 
-  const removeFile = () => {
-    setFile(null);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (
+      selectedFile.size >
+      maxSize
+    ) {
+
+      alert(
+        "File size must be less than 5MB."
+      );
+
+      return false;
+
     }
+
+
+    return true;
+
   };
 
-  // FIXED: Analyze button handler added here
+
+  // ==================================================
+  // FILE CHANGE
+  // ==================================================
+
+  const handleFileChange = (e) => {
+
+    const selectedFile =
+      e.target.files?.[0];
+
+
+    if (
+      selectedFile &&
+      validateFile(selectedFile)
+    ) {
+
+      setFile(selectedFile);
+
+    }
+
+  };
+
+
+  // ==================================================
+  // DRAG
+  // ==================================================
+
+  const handleDrag = (e) => {
+
+    e.preventDefault();
+
+    e.stopPropagation();
+
+
+    if (
+      e.type === "dragenter" ||
+      e.type === "dragover"
+    ) {
+
+      setDragActive(true);
+
+    }
+
+    else if (
+      e.type === "dragleave"
+    ) {
+
+      setDragActive(false);
+
+    }
+
+  };
+
+
+  // ==================================================
+  // DROP
+  // ==================================================
+
+  const handleDrop = (e) => {
+
+    e.preventDefault();
+
+    e.stopPropagation();
+
+    setDragActive(false);
+
+
+    const droppedFile =
+      e.dataTransfer.files?.[0];
+
+
+    if (
+      droppedFile &&
+      validateFile(droppedFile)
+    ) {
+
+      setFile(droppedFile);
+
+    }
+
+  };
+
+
+  // ==================================================
+  // ANALYZE
+  // ==================================================
+
   const handleAnalyze = async () => {
-    if (!file) return;
 
-    setLoading(true);
+    if (!file) {
+
+      alert(
+        "Please upload your resume first."
+      );
+
+      return;
+
+    }
+
+
+    const formData =
+      new FormData();
+
+
+    formData.append(
+      "file",
+      file
+    );
+
 
     try {
-      const formData = new FormData();
-      formData.append("resume", file);
 
-      // Backend API Call (Jab backend ready ho, tab ise uncomment karein)
-      /*
-      const response = await fetch("/api/analyze-resume", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      */
+      setLoading(true);
 
-      // Simulated Delay for Testing UI (2 seconds)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Resume Result page par redirect karein
-      navigate("/resume/result", { state: { fileName: file.name } });
-    } catch (error) {
-      console.error("Error analyzing resume:", error);
-      alert("Failed to analyze resume. Please try again.");
-    } finally {
-      setLoading(false);
+      const token =
+        localStorage.getItem(
+          "token"
+        );
+
+
+      const response =
+        await axios.post(
+
+          "http://localhost:5000/api/resume/analyze",
+
+          formData,
+
+          {
+
+            headers: {
+
+              "Content-Type":
+                "multipart/form-data",
+
+              Authorization:
+                `Bearer ${token}`
+
+            }
+
+          }
+
+        );
+
+
+      // =================================================
+      // SUCCESS
+      // =================================================
+
+      navigate(
+        "/resume/result",
+        {
+
+          state: {
+
+            resultData:
+              response.data.resume,
+
+            fileName:
+              file.name
+
+          }
+
+        }
+
+      );
+
+
     }
+
+    catch (error) {
+
+      console.error(
+        "Error analyzing resume:",
+        error
+      );
+
+
+      // Get backend message
+
+      const message =
+        error.response?.data?.message ||
+        "Failed to analyze resume. Please try again.";
+
+
+      alert(message);
+
+    }
+
+    finally {
+
+      setLoading(false);
+
+    }
+
   };
 
+
+  // ==================================================
+  // UI
+  // ==================================================
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 right-0 h-96 w-96 rounded-full bg-blue-100/50 blur-3xl" />
-      </div>
 
-      <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        {/* Header */}
-        <section className="mb-10">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-blue-600">
-            <FileText size={17} />
-            Resume Analysis
-          </div>
+    <div className="min-h-screen bg-slate-50 p-6 md:p-10 text-slate-900">
 
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+      <div className="mx-auto max-w-5xl">
+
+
+        {/* TITLE */}
+
+        <div className="mb-8">
+
+          <p className="text-sm font-semibold text-blue-600">
+
+            RESUME ANALYSIS
+
+          </p>
+
+
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+
             Analyze your resume
+
           </h1>
 
-          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-500">
-            Upload your resume and get insights about ATS compatibility,
-            skills, strengths and areas for improvement.
+
+          <p className="mt-2 text-slate-500">
+
+            Upload your resume and get insights about ATS compatibility, skills, strengths and areas for improvement.
+
           </p>
-        </section>
 
-        {/* Main */}
-        <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          {/* Upload */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-lg font-bold">Upload your resume</h2>
+        </div>
 
-            <p className="mt-1 text-sm text-slate-500">
-              PDF or DOCX • Maximum 5MB
-            </p>
 
-            {!file ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className={`mt-7 cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition ${isDragging
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
-                  }`}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.docx"
-                  className="hidden"
-                  onChange={(event) =>
-                    handleFile(event.target.files?.[0])
-                  }
-                />
+        <div className="grid gap-8 lg:grid-cols-3">
 
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                  <Upload size={27} />
-                </div>
 
-                <h3 className="mt-5 font-semibold text-slate-800">
-                  Drop your resume here
-                </h3>
+          {/* =========================================
+              UPLOAD BOX
+          ========================================= */}
 
-                <p className="mt-2 text-sm text-slate-500">
-                  or click to browse your computer
-                </p>
+          <div className="lg:col-span-2">
 
-                <div className="mt-5 flex justify-center gap-2">
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-500">
-                    PDF
-                  </span>
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-500">
-                    DOCX
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
-                    <FileText size={22} />
+
+              <h2 className="text-lg font-bold">
+
+                Upload your resume
+
+              </h2>
+
+
+              <p className="text-xs text-slate-400 mb-6">
+
+                PDF only • Maximum 5MB
+
+              </p>
+
+
+              {!file ? (
+
+                /* DROPZONE */
+
+                <div
+
+                  onDragEnter={handleDrag}
+
+                  onDragLeave={handleDrag}
+
+                  onDragOver={handleDrag}
+
+                  onDrop={handleDrop}
+
+                  className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 transition ${dragActive
+
+                      ? "border-blue-600 bg-blue-50/50"
+
+                      : "border-slate-200 bg-slate-50/50 hover:bg-slate-50"
+
+                    }`}
+
+                >
+
+                  <input
+
+                    type="file"
+
+                    accept="application/pdf,.pdf"
+
+                    onChange={
+                      handleFileChange
+                    }
+
+                    className="absolute inset-0 cursor-pointer opacity-0"
+
+                  />
+
+
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4">
+
+                    <Upload size={22} />
+
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">
-                      {file.name}
-                    </p>
 
-                    <p className="mt-1 text-xs text-slate-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                  <p className="font-semibold text-slate-700">
+
+                    Drop your resume here
+
+                  </p>
+
+
+                  <p className="text-xs text-slate-400 mt-1">
+
+                    or click to browse your computer
+
+                  </p>
+
+
+                  <div className="mt-4">
+
+                    <span className="rounded bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+
+                      PDF
+
+                    </span>
+
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={removeFile}
-                    disabled={loading}
-                    className="rounded-lg p-2 text-slate-400 hover:bg-white hover:text-red-500 disabled:opacity-50"
-                  >
-                    <X size={18} />
-                  </button>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 rounded-xl bg-white p-3 text-sm text-emerald-600">
-                  <CheckCircle2 size={17} />
-                  Resume uploaded successfully
-                </div>
-              </div>
-            )}
-
-            {/* Analyze Button - FIXED: onClick and loading state added */}
-            <button
-              onClick={handleAnalyze}
-              disabled={!file || loading}
-              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold transition ${file && !loading
-                  ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-98 cursor-pointer"
-                  : "cursor-not-allowed bg-slate-100 text-slate-400"
-                }`}
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={17} className="animate-spin" />
-                  Analyzing Resume...
-                </>
               ) : (
-                <>
-                  <Sparkles size={17} />
-                  Analyze Resume
-                  <ArrowRight size={17} />
-                </>
+
+                /* SELECTED FILE */
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+
+                  <div className="flex items-center justify-between">
+
+
+                    <div className="flex items-center gap-3">
+
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+
+                        <FileText size={20} />
+
+                      </div>
+
+
+                      <div>
+
+                        <p className="text-sm font-semibold text-slate-800">
+
+                          {file.name}
+
+                        </p>
+
+
+                        <p className="text-xs text-slate-400">
+
+                          {(
+                            file.size /
+                            (1024 * 1024)
+                          ).toFixed(2)}{" "}
+
+                          MB
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+
+                    <button
+
+                      onClick={() =>
+                        setFile(null)
+                      }
+
+                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+
+                    >
+
+                      <X size={18} />
+
+                    </button>
+
+                  </div>
+
+
+                  <div className="mt-3 text-xs font-medium text-emerald-600">
+
+                    ✓ PDF selected successfully
+
+                  </div>
+
+                </div>
+
               )}
-            </button>
+
+
+              {/* =====================================
+                  ANALYZE BUTTON
+              ===================================== */}
+
+              <button
+
+                onClick={
+                  handleAnalyze
+                }
+
+                disabled={
+                  !file ||
+                  loading
+                }
+
+                className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition ${!file || loading
+
+                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+
+                    : "bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.99] cursor-pointer"
+
+                  }`}
+
+              >
+
+                {loading ? (
+
+                  <>
+
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
+
+                    Analyzing Resume...
+
+                  </>
+
+                ) : (
+
+                  <>
+
+                    Analyze Resume
+
+                    <ArrowRight
+                      size={16}
+                    />
+
+                  </>
+
+                )}
+
+              </button>
+
+
+            </div>
+
           </div>
 
-          {/* Info */}
-          <aside className="space-y-5">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="font-bold">What you'll get</h2>
 
-              <div className="mt-5 space-y-4">
-                <Feature text="ATS compatibility score" />
-                <Feature text="Skills and keyword analysis" />
-                <Feature text="Resume strengths and weaknesses" />
-                <Feature text="Job-role compatibility" />
-              </div>
+          {/* =========================================
+              INFO BOX
+          ========================================= */}
+
+          <div className="space-y-4">
+
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+
+
+              <h3 className="font-bold text-slate-900 mb-4">
+
+                What you'll get
+
+              </h3>
+
+
+              <ul className="space-y-3 text-sm text-slate-600">
+
+
+                <li className="flex items-center gap-2.5">
+
+                  <div className="h-2 w-2 rounded-full bg-blue-600" />
+
+                  ATS compatibility score
+
+                </li>
+
+
+                <li className="flex items-center gap-2.5">
+
+                  <div className="h-2 w-2 rounded-full bg-blue-600" />
+
+                  Skills and keyword analysis
+
+                </li>
+
+
+                <li className="flex items-center gap-2.5">
+
+                  <div className="h-2 w-2 rounded-full bg-blue-600" />
+
+                  Resume strengths and weaknesses
+
+                </li>
+
+
+                <li className="flex items-center gap-2.5">
+
+                  <div className="h-2 w-2 rounded-full bg-blue-600" />
+
+                  Job-role compatibility
+
+                </li>
+
+
+              </ul>
+
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-100/70 p-5">
-              <div className="flex gap-3">
-                <ShieldCheck
-                  size={20}
-                  className="shrink-0 text-slate-600"
-                />
+          </div>
 
-                <div>
-                  <h3 className="text-sm font-semibold">
-                    Your resume stays private
-                  </h3>
 
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Your document is used only for providing your
-                    resume analysis.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </section>
-      </main>
-    </div>
-  );
-}
+        </div>
 
-function Feature({ text }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-        <CheckCircle2 size={15} />
       </div>
 
-      <span className="text-sm text-slate-600">{text}</span>
     </div>
+
   );
+
 }

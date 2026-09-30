@@ -2,12 +2,16 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    // Direct local URI hardcode kar rahe hain taaki .env ka jhanjhat hi na rahe
-    const localURI = "mongodb://127.0.0.1:27017/careerpilot";
+    const mongoURI = process.env.MONGO_URI;
 
-    await mongoose.connect(localURI);
+    if (!mongoURI) {
+      console.error("MONGO_URI is not defined in .env");
+      process.exit(1);
+    }
 
-    console.log("MongoDB connected successfully to LOCAL DB! 🚀");
+    await mongoose.connect(mongoURI);
+
+    console.log("MongoDB connected successfully to Atlas! 🚀");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
     process.exit(1);

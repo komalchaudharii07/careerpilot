@@ -1,178 +1,315 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  KeyRound,
+  CheckCircle2,
+} from "lucide-react";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!email.trim()) return;
 
-    setSubmitted(true);
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6 py-10 relative overflow-hidden">
+    <div className="min-h-screen bg-[#f7faff] flex items-center justify-center px-4 relative overflow-hidden">
 
-      {/* Background decoration */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-200/50 rounded-full blur-3xl" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl" />
+      {/* Background */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-100/60 rounded-full blur-3xl" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl" />
 
-      <div className="relative w-full max-w-5xl grid lg:grid-cols-2 bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl">
+      {/* Card */}
+      <div
+        className="
+          relative
+          w-full
+          max-w-[500px]
+          bg-white
+          border border-slate-200
+          rounded-[24px]
+          px-8 py-8
+          sm:px-10 sm:py-9
+          shadow-[0_20px_60px_rgba(15,23,42,0.08)]
+        "
+      >
 
-        {/* LEFT SIDE */}
-        <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
+        {/* Back */}
+        <Link
+          to="/login"
+          className="
+            inline-flex items-center gap-2
+            text-sm font-medium
+            text-slate-500
+            hover:text-blue-600
+            transition
+          "
+        >
+          <ArrowLeft size={16} />
+          Back to login
+        </Link>
 
-          <div>
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-16">
-              <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center font-bold text-xl">
-                C
-              </div>
+        {!submitted ? (
+          <div className="mt-7">
 
-              <span className="text-2xl font-bold">
-                Career<span className="text-blue-200">Pilot</span>
-              </span>
+            {/* Small Icon */}
+            <div
+              className="
+                w-11 h-11
+                rounded-xl
+                bg-blue-50
+                border border-blue-100
+                flex items-center justify-center
+                mb-5
+              "
+            >
+              <KeyRound
+                size={20}
+                className="text-blue-600"
+              />
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 text-blue-100 text-sm font-semibold mb-4">
-                <Sparkles size={17} />
-                SECURE ACCOUNT RECOVERY
-              </div>
+            {/* Heading */}
+            <h1
+              className="
+                text-[28px]
+                sm:text-[30px]
+                font-bold
+                tracking-tight
+                text-slate-900
+              "
+            >
+              Forgot password?
+            </h1>
 
-              <h1 className="text-4xl font-bold leading-tight">
-                Get back on track with your
-                <span className="text-blue-200"> career journey.</span>
-              </h1>
+            <p
+              className="
+                mt-2
+                text-[14px]
+                sm:text-[15px]
+                leading-6
+                text-slate-500
+                max-w-[400px]
+              "
+            >
+              Enter your email and we'll send you a reset link.
+            </p>
 
-              <p className="mt-6 text-blue-100 leading-7">
-                Forgot your password? No problem. Enter your registered
-                email and we'll help you get back into your CareerPilot
-                account.
-              </p>
-            </div>
-          </div>
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="mt-7 space-y-4"
+            >
 
-          <div className="flex items-center gap-3 text-sm text-blue-100">
-            <ShieldCheck size={18} />
-            Your account security matters to us.
-          </div>
-        </div>
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="
+                    block
+                    text-[11px]
+                    font-bold
+                    uppercase
+                    tracking-wider
+                    text-slate-600
+                    mb-2
+                  "
+                >
+                  Email address
+                </label>
 
-        {/* RIGHT SIDE */}
-        <div className="p-8 sm:p-12">
+                <div className="relative">
 
-          {/* Mobile Logo */}
-          <div className="flex lg:hidden items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
-              C
-            </div>
+                  <Mail
+                    size={18}
+                    className="
+                      absolute
+                      left-4
+                      top-1/2
+                      -translate-y-1/2
+                      text-slate-400
+                    "
+                  />
 
-            <span className="text-xl font-bold text-slate-900">
-              Career<span className="text-blue-600">Pilot</span>
-            </span>
-          </div>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="
+                      w-full
+                      h-[52px]
+                      pl-11
+                      pr-4
 
-          {/* Back */}
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 transition mb-8"
-          >
-            <ArrowLeft size={16} />
-            Back to login
-          </Link>
+                      rounded-xl
+                      bg-white
+                      border border-slate-200
 
-          {!submitted ? (
-            <>
-              {/* Heading */}
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-slate-900">
-                  Forgot password?
-                </h2>
+                      text-sm
+                      text-slate-900
 
-                <p className="mt-2 text-slate-500 leading-6">
-                  Enter your email address and we'll send you instructions
-                  to reset your password.
-                </p>
-              </div>
+                      placeholder:text-slate-400
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
+                      outline-none
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Email address
-                  </label>
+                      transition-all
 
-                  <div className="relative">
-                    <Mail
-                      size={18}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
+                      focus:border-blue-500
+                      focus:ring-4
+                      focus:ring-blue-500/10
+                    "
+                  />
 
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      required
-                      className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 outline-none text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
-                    />
-                  </div>
                 </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5"
-                >
-                  Send reset instructions
-                </button>
-              </form>
-
-              <p className="text-center text-sm text-slate-500 mt-8">
-                Remember your password?{" "}
-                <Link
-                  to="/login"
-                  className="text-blue-600 font-semibold hover:text-blue-700"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </>
-          ) : (
-            /* Success State */
-            <div className="text-center py-8">
-
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6">
-                <Mail size={28} />
               </div>
 
-              <h2 className="text-2xl font-bold text-slate-900">
-                Check your inbox
-              </h2>
+              {/* Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="
+                  w-full
+                  h-[52px]
+                  rounded-xl
 
-              <p className="mt-3 text-slate-500 leading-6">
-                If an account exists for{" "}
-                <span className="font-semibold text-slate-700">
-                  {email}
-                </span>
-                , password reset instructions have been sent.
-              </p>
+                  bg-blue-600
+                  hover:bg-blue-700
 
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 mt-7 px-5 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                  text-white
+                  text-sm
+                  font-semibold
+
+                  shadow-[0_8px_18px_rgba(37,99,235,0.22)]
+
+                  transition-all
+
+                  active:scale-[0.99]
+
+                  disabled:opacity-60
+                  disabled:cursor-not-allowed
+
+                  flex
+                  items-center
+                  justify-center
+                "
               >
-                <ArrowLeft size={17} />
-                Back to login
-              </Link>
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="
+                        w-4 h-4
+                        border-2
+                        border-white/30
+                        border-t-white
+                        rounded-full
+                        animate-spin
+                      "
+                    />
+                    Sending...
+                  </span>
+                ) : (
+                  "Send Reset Instructions"
+                )}
+              </button>
+
+            </form>
+
+          </div>
+        ) : (
+
+          /* Success */
+          <div className="text-center py-8">
+
+            <div
+              className="
+                w-12 h-12
+                mx-auto
+                rounded-xl
+                bg-blue-50
+                border border-blue-100
+                flex items-center justify-center
+                mb-5
+              "
+            >
+              <CheckCircle2
+                size={23}
+                className="text-blue-600"
+              />
             </div>
-          )}
-        </div>
+
+            <h2
+              className="
+                text-[26px]
+                font-bold
+                text-slate-900
+              "
+            >
+              Check your inbox
+            </h2>
+
+            <p
+              className="
+                mt-2
+                text-sm
+                leading-6
+                text-slate-500
+                max-w-[350px]
+                mx-auto
+              "
+            >
+              We've sent a reset link to{" "}
+              <span className="font-semibold text-slate-800">
+                {email}
+              </span>
+              .
+            </p>
+
+            <Link
+              to="/login"
+              className="
+                mt-6
+                w-full
+                h-[50px]
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+
+                rounded-xl
+
+                bg-blue-600
+                hover:bg-blue-700
+
+                text-white
+                text-sm
+                font-semibold
+
+                transition
+              "
+            >
+              <ArrowLeft size={16} />
+              Return to login
+            </Link>
+
+          </div>
+        )}
+
       </div>
     </div>
   );

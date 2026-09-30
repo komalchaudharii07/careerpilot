@@ -1,51 +1,145 @@
 import api from "./api";
 
-// Start a new mock interview session
-export const startInterview = async (role, level) => {
-  try {
-    const response = await api.post("/interview/start", { role, level });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
-};
+// ==========================================
+// START INTERVIEW
+// ==========================================
 
-// Submit user response to an interview question
-export const submitAnswer = async (interviewId, questionId, answer) => {
+export const startInterview = async (
+  role,
+  level,
+  interviewType
+) => {
   try {
-    const response = await api.post(`/interview/${interviewId}/answer`, {
-      questionId,
-      answer,
+    const data = await api("/interview/start", {
+      method: "POST",
+      body: JSON.stringify({
+        role,
+        level,
+        interviewType,
+      }),
     });
-    return response.data;
+
+    return data;
   } catch (error) {
-    throw error.response?.data || error.message;
+    console.error("Start Interview Error:", error);
+    throw error;
   }
 };
 
-// Get past interview history/results
+// ==========================================
+// SUBMIT ANSWER
+// ==========================================
+
+export const submitAnswer = async (
+  interviewId,
+  questionId,
+  question,
+  answer
+) => {
+  try {
+    const data = await api(
+      `/interview/${interviewId}/answer`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          questionId,
+          question,
+          answer,
+        }),
+      }
+    );
+
+    return data;
+  } catch (error) {
+    console.error("Submit Answer Error:", error);
+    throw error;
+  }
+};
+
+// ==========================================
+// COMPLETE INTERVIEW
+// ==========================================
+
+export const completeInterview = async (
+  interviewId
+) => {
+  try {
+    const data = await api(
+      `/interview/${interviewId}/complete`,
+      {
+        method: "POST",
+      }
+    );
+
+    return data;
+  } catch (error) {
+    console.error(
+      "Complete Interview Error:",
+      error
+    );
+
+    throw error;
+  }
+};
+
+// ==========================================
+// GET INTERVIEW HISTORY
+// ==========================================
+
 export const getInterviewHistory = async () => {
   try {
-    const response = await api.get("/interview/history");
-    return response.data;
+    const data = await api(
+      "/interview/history",
+      {
+        method: "GET",
+      }
+    );
+
+    return data;
   } catch (error) {
-    throw error.response?.data || error.message;
+    console.error(
+      "Interview History Error:",
+      error
+    );
+
+    throw error;
   }
 };
 
-// Get detailed report for a specific interview
-export const getInterviewDetails = async (interviewId) => {
+// ==========================================
+// GET INTERVIEW DETAILS
+// ==========================================
+
+export const getInterviewDetails = async (
+  interviewId
+) => {
   try {
-    const response = await api.get(`/interview/${interviewId}`);
-    return response.data;
+    const data = await api(
+      `/interview/${interviewId}`,
+      {
+        method: "GET",
+      }
+    );
+
+    return data;
   } catch (error) {
-    throw error.response?.data || error.message;
+    console.error(
+      "Interview Details Error:",
+      error
+    );
+
+    throw error;
   }
 };
+
+// ==========================================
+// DEFAULT EXPORT
+// ==========================================
 
 export default {
   startInterview,
   submitAnswer,
+  completeInterview,
   getInterviewHistory,
   getInterviewDetails,
 };

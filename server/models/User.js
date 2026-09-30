@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    // =========================
+    // ==============================
     // BASIC INFORMATION
-    // =========================
+    // ==============================
+
     name: {
       type: String,
       required: true,
@@ -24,9 +25,22 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    // =========================
-    // EDUCATION / PROFILE
-    // =========================
+    // ==============================
+    // PROFILE INFORMATION
+    // ==============================
+
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     college: {
       type: String,
       default: "",
@@ -35,7 +49,7 @@ const userSchema = new mongoose.Schema(
 
     degree: {
       type: String,
-      default: "",
+      default: "B.Tech",
       trim: true,
     },
 
@@ -50,9 +64,10 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    // =========================
-    // CAREER
-    // =========================
+    // ==============================
+    // CAREER INFORMATION
+    // ==============================
+
     targetRole: {
       type: String,
       default: "",
@@ -65,12 +80,31 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // =========================
-    // SKILLS
-    // =========================
     skills: {
       type: [String],
       default: [],
+    },
+
+    // ==============================
+    // SOCIAL PROFILES
+    // ==============================
+
+    github: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    linkedin: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    portfolio: {
+      type: String,
+      default: "",
+      trim: true,
     },
   },
   {
@@ -78,6 +112,14 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// ==============================
+// PASSWORD CHECK
+// ==============================
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return enteredPassword === this.password;
+};
+
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+module.exports = User;``

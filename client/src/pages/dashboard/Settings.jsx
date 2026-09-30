@@ -1,203 +1,412 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   Bell,
   User,
-  Shield,
-  Moon,
   LogOut,
   ChevronRight,
+  CheckCircle,
+  LockKeyhole,
+  MonitorSmartphone,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 export default function Settings() {
-  return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 overflow-x-hidden">
-      <main className="mx-auto max-w-5xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-blue-600 sm:text-sm">
-            ACCOUNT
-          </p>
+  const navigate = useNavigate();
 
-          <h1 className="mt-1 text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
+  const [careerUpdates, setCareerUpdates] = useState(true);
+  const [jobRecommendations, setJobRecommendations] = useState(true);
+  const [message, setMessage] = useState("");
+
+  // =====================================================
+  // LOAD SAVED SETTINGS
+  // =====================================================
+
+  useEffect(() => {
+    const savedCareerUpdates =
+      localStorage.getItem("careerUpdates");
+
+    const savedJobRecommendations =
+      localStorage.getItem("jobRecommendations");
+
+    if (savedCareerUpdates !== null) {
+      setCareerUpdates(savedCareerUpdates === "true");
+    }
+
+    if (savedJobRecommendations !== null) {
+      setJobRecommendations(
+        savedJobRecommendations === "true"
+      );
+    }
+  }, []);
+
+  // =====================================================
+  // SHOW MESSAGE
+  // =====================================================
+
+  const showMessage = (text) => {
+    setMessage(text);
+
+    setTimeout(() => {
+      setMessage("");
+    }, 2200);
+  };
+
+  // =====================================================
+  // CAREER UPDATES
+  // =====================================================
+
+  const handleCareerUpdates = (value) => {
+    setCareerUpdates(value);
+
+    localStorage.setItem(
+      "careerUpdates",
+      String(value)
+    );
+
+    showMessage(
+      value
+        ? "Career updates enabled"
+        : "Career updates disabled"
+    );
+  };
+
+  // =====================================================
+  // JOB RECOMMENDATIONS
+  // =====================================================
+
+  const handleJobRecommendations = (value) => {
+    setJobRecommendations(value);
+
+    localStorage.setItem(
+      "jobRecommendations",
+      String(value)
+    );
+
+    showMessage(
+      value
+        ? "Job recommendations enabled"
+        : "Job recommendations disabled"
+    );
+  };
+
+  // =====================================================
+  // SIGN OUT
+  // =====================================================
+
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+
+    navigate("/", {
+      replace: true,
+    });
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-slate-50 text-slate-900">
+
+      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <div className="mb-7">
+
+          <div className="mb-2 flex items-center gap-2 text-blue-600">
+            <SettingsIcon size={16} />
+
+            <span className="text-xs font-bold uppercase tracking-widest">
+              ACCOUNT SETTINGS
+            </span>
+          </div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Settings
           </h1>
 
-          <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
-            Manage your account preferences and privacy settings.
+          <p className="mt-1.5 max-w-2xl text-sm text-slate-500">
+            Manage your account and CareerPilot preferences.
           </p>
+
         </div>
 
-        {/* Settings Sections */}
-        <div className="space-y-4 sm:space-y-6">
-          {/* Account Section */}
+        {/* =================================================
+            SUCCESS MESSAGE
+        ================================================= */}
+
+        {message && (
+          <div className="mb-6 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+
+            <CheckCircle size={17} />
+
+            <span>{message}</span>
+
+          </div>
+        )}
+
+        <div className="space-y-5">
+
+          {/* =================================================
+              ACCOUNT
+          ================================================= */}
+
           <SettingsSection
             icon={<User size={18} />}
             title="Account"
-            description="Manage your account information."
+            description="Manage your personal and security information."
           >
+
+            {/* Profile Information */}
+
             <SettingRow
+              icon={<User size={17} />}
               title="Profile information"
-              description="Update your name, education and career details."
-              action="Edit"
+              description="Update your name, education, skills and career details."
+              action="Manage"
+              onClick={() =>
+                navigate("/dashboard/profile")
+              }
             />
+
+            {/* Change Password */}
+
+            <SettingRow
+              icon={<LockKeyhole size={17} />}
+              title="Change password"
+              description="Update your password to keep your account secure."
+              action="Change"
+              onClick={() =>
+                navigate("/dashboard/change-password")
+              }
+            />
+
+            {/* Manage Sessions */}
+
+            <SettingRow
+              icon={<MonitorSmartphone size={17} />}
+              title="Manage sessions"
+              description="View and manage devices currently signed in to your account."
+              action="Manage"
+              onClick={() =>
+                navigate("/dashboard/sessions")
+              }
+            />
+
           </SettingsSection>
 
-          {/* Notifications Section */}
+          {/* =================================================
+              NOTIFICATIONS
+          ================================================= */}
+
           <SettingsSection
             icon={<Bell size={18} />}
             title="Notifications"
-            description="Control how CareerPilot communicates with you."
+            description="Choose which updates you want to receive."
           >
+
+            {/* Career Updates */}
+
             <ToggleRow
               title="Career updates"
               description="Receive updates about your career progress."
-              defaultChecked={true}
+              checked={careerUpdates}
+              onChange={handleCareerUpdates}
             />
+
+            {/* Job Recommendations */}
 
             <ToggleRow
               title="Job recommendations"
-              description="Get notified when relevant opportunities are found."
-              defaultChecked={true}
+              description="Get notified about relevant job opportunities."
+              checked={jobRecommendations}
+              onChange={handleJobRecommendations}
             />
+
           </SettingsSection>
 
-          {/* Security Section */}
-          <SettingsSection
-            icon={<Shield size={18} />}
-            title="Privacy & Security"
-            description="Manage your account security."
-          >
-            <SettingRow
-              title="Password"
-              description="Change your account password."
-              action="Change"
-            />
+          {/* =================================================
+              SIGN OUT
+          ================================================= */}
 
-            <SettingRow
-              title="Login sessions"
-              description="Review active sessions on your account."
-              action="Manage"
-            />
-          </SettingsSection>
+          <section className="rounded-2xl border border-red-200 bg-white p-4 sm:p-5">
 
-          {/* Appearance Section */}
-          <SettingsSection
-            icon={<Moon size={18} />}
-            title="Appearance"
-            description="Customize how CareerPilot looks."
-          >
-            <SettingRow
-              title="Theme"
-              description="Choose your preferred appearance."
-              action="Light"
-            />
-          </SettingsSection>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-          {/* Sign Out Box */}
-          <section className="rounded-xl sm:rounded-2xl border border-red-100 bg-white p-4 sm:p-5 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500">
+              <div className="flex items-start gap-3">
+
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
                   <LogOut size={18} />
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xs sm:text-sm font-semibold text-slate-900 truncate">
+                <div>
+
+                  <h3 className="text-sm font-semibold text-slate-900">
                     Sign out
                   </h3>
 
-                  <p className="mt-0.5 text-xs text-slate-500 leading-normal">
+                  <p className="mt-1 text-xs text-slate-500">
                     Sign out from your CareerPilot account.
                   </p>
+
                 </div>
+
               </div>
 
-              <button className="w-full sm:w-auto shrink-0 rounded-lg sm:rounded-xl border border-red-200 bg-red-50/50 px-4 py-2 text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-100 transition active:scale-95 text-center">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 active:scale-[0.98] sm:w-auto"
+              >
                 Sign out
               </button>
+
             </div>
+
           </section>
+
         </div>
+
       </main>
+
     </div>
   );
 }
 
-/* Base Responsive Card Section */
-function SettingsSection({ icon, title, description, children }) {
+// =====================================================
+// SETTINGS SECTION
+// =====================================================
+
+function SettingsSection({
+  icon,
+  title,
+  description,
+  children,
+}) {
   return (
-    <section className="overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white shadow-xs">
-      <div className="flex items-start gap-3 border-b border-slate-100 p-3.5 sm:p-5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-blue-50 text-blue-600">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+
+      {/* Section Header */}
+
+      <div className="flex items-start gap-3 border-b border-slate-100 p-4 sm:p-5">
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
           {icon}
         </div>
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+
+          <h2 className="text-sm font-bold text-slate-900">
             {title}
           </h2>
 
-          <p className="mt-0.5 text-xs text-slate-500 leading-tight sm:leading-normal">
+          <p className="mt-1 text-xs text-slate-500">
             {description}
           </p>
+
         </div>
+
       </div>
 
-      <div className="divide-y divide-slate-100">{children}</div>
+      {/* Section Content */}
+
+      <div className="divide-y divide-slate-100">
+        {children}
+      </div>
+
     </section>
   );
 }
 
-/* Row with Action Button */
-function SettingRow({ title, description, action }) {
-  return (
-    <div className="flex flex-row items-center justify-between gap-3 p-3.5 sm:p-5">
-      <div className="min-w-0 flex-1">
-        <p className="text-xs sm:text-sm font-medium text-slate-900">
-          {title}
-        </p>
+// =====================================================
+// SETTING ROW
+// =====================================================
 
-        <p className="mt-0.5 text-xs text-slate-500 leading-tight sm:leading-normal">
-          {description}
-        </p>
+function SettingRow({
+  icon,
+  title,
+  description,
+  action,
+  onClick,
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
+
+      <div className="flex min-w-0 items-center gap-3">
+
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+
+          <p className="text-sm font-semibold text-slate-900">
+            {title}
+          </p>
+
+          <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+            {description}
+          </p>
+
+        </div>
+
       </div>
 
-      {action && (
-        <button className="shrink-0 inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 transition active:scale-95">
-          <span>{action}</span>
-          <ChevronRight size={13} className="text-slate-400 sm:hidden" />
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 active:scale-95"
+      >
+        {action}
+
+        <ChevronRight size={14} />
+      </button>
+
     </div>
   );
 }
 
-/* Row with Toggle Switch */
-function ToggleRow({ title, description, defaultChecked }) {
-  const [isChecked, setIsChecked] = useState(defaultChecked || false);
+// =====================================================
+// TOGGLE ROW
+// =====================================================
 
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+}) {
   return (
-    <div className="flex items-center justify-between gap-3 p-3.5 sm:p-5">
+    <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
+
       <div className="min-w-0 flex-1">
-        <p className="text-xs sm:text-sm font-medium text-slate-900">
+
+        <p className="text-sm font-semibold text-slate-900">
           {title}
         </p>
 
-        <p className="mt-0.5 text-xs text-slate-500 leading-tight sm:leading-normal">
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">
           {description}
         </p>
+
       </div>
 
-      <label className="relative inline-flex cursor-pointer items-center shrink-0">
+      <label className="relative inline-flex shrink-0 cursor-pointer items-center">
+
         <input
           type="checkbox"
-          checked={isChecked}
-          onChange={(e) => setIsChecked(e.target.checked)}
+          checked={checked}
+          onChange={(e) =>
+            onChange(e.target.checked)
+          }
           className="peer sr-only"
         />
 
-        <div className="h-5 w-9 sm:h-6 sm:w-11 rounded-full bg-slate-200 transition peer-checked:bg-blue-600 after:absolute after:top-[2px] sm:after:top-[3px] after:left-[2px] sm:after:left-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4 sm:peer-checked:after:translate-x-5" />
+        <div className="h-6 w-11 rounded-full bg-slate-200 transition peer-checked:bg-blue-600 after:absolute after:left-[3px] after:top-[3px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all peer-checked:after:translate-x-5" />
+
       </label>
+
     </div>
   );
 }

@@ -1,430 +1,1165 @@
-import { useState } from "react";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
+  ArrowLeft,
   User,
   Mail,
   Phone,
   MapPin,
   GraduationCap,
-  Edit3,
-  Camera,
-  Globe,
+  Briefcase,
+  Code2,
   Save,
-  CheckCircle2,
   FileText,
-  Sparkles,
-  Plus,
-  Trash2,
-  BookOpen,
-  Calendar,
+  Upload,
+  Eye,
+  CheckCircle,
+  X,
+  Globe,
 } from "lucide-react";
 
-// Dropdown Pre-defined Options
-const COLLEGES = [
-  "Indian Institute of Technology (IIT)",
-  "National Institute of Technology (NIT)",
-  "BITS Pilani",
-  "VIT Vellore",
-  "SRM Institute of Science and Technology",
-  "Delhi Technological University (DTU)",
-  "Other / University Not Listed",
-];
+import api from "../../services/api";
+import {
+  getProfile,
+  updateProfile,
+} from "../../services/profileService";
 
-const BRANCHES = [
-  "Computer Science & Engineering (CSE)",
-  "Information Technology (IT)",
-  "Electronics & Communication (ECE)",
-  "Electrical & Electronics (EEE)",
-  "Mechanical Engineering",
-  "Data Science & AI",
-  "civil engineering",
-  "chemical engineering",
-  "biological engineering",
-  "Other",
-];
+const Profile = () => {
+  const navigate = useNavigate();
 
-const GRADUATION_YEARS = [
-  "2023",
-  "2024",
-  "2025",
-  "2026",
-  "2027",
-  "2028",
-];
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-export default function Profile() {
-  const [isEditing, setIsEditing] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const [resume, setResume] = useState(null);
+
   const [profile, setProfile] = useState({
-    name: "Komal chaudhari",
-    role: "Full Stack Developer",
-    email: "komal@google.com",
-    phone: "+91 8887950968",
-    location: "Uttar pradesh, India",
-    college: "National Institute of Technology Meghalaya",
-    branch: "Computer Science & Engineering (CSE)",
-    gradYear: "2027",
-    bio: "Passionate Full Stack Engineer focused on building scalable web applications using React, Node.js, and modern cloud architecture.",
-    experienceLevel: "0–1 Years (Fresher)",
-    targetRole: "Frontend / Full Stack Engineer",
-    github: "github.com/komalchaudharii07",
-    linkedin: "linkedin.com/in/komalchaudhari",
-    portfolio: "komalchaudhari.dev",
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    college: "",
+    degree: "",
+    branch: "",
+    graduationYear: "",
+    targetRole: "",
+    bio: "",
+    skills: [],
+    github: "",
+    linkedin: "",
+    portfolio: "",
   });
 
-  const [skills, setSkills] = useState([
-    "React.js",
-    "JavaScript (ES6+)",
-    "Node.js",
-    "Tailwind CSS",
-    "TypeScript",
-    "MongoDB",
-    "Git & GitHub",
-  ]);
-  const [newSkill, setNewSkill] = useState("");
+  const locations = [
+    "Shillong",
+    "Tura",
+    "Cherrapunji",
+    "Guwahati",
+    "Kolkata",
+    "Delhi",
+    "Mumbai",
+    "Bangalore",
+    "Hyderabad",
+    "Pune",
+    "Chennai",
+    "Noida",
+    "Gurugram",
+    "Lucknow",
+    "Kanpur",
+    "Jaipur",
+    "Ahmedabad",
+    "Other",
+  ];
 
-  const handleAddSkill = (e) => {
-    e.preventDefault();
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
+  const availableSkills = [
+    "C",
+    "C++",
+    "Java",
+    "Python",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "MySQL",
+    "SQL",
+    "HTML",
+    "CSS",
+    "Tailwind CSS",
+    "Next.js",
+    "Git",
+    "GitHub",
+    "REST API",
+    "DSA",
+    "OOP",
+    "DBMS",
+    "Operating Systems",
+    "Computer Networks",
+  ];
+
+  // =========================
+  // LOAD PROFILE + RESUME
+  // =========================
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const profileResponse = await getProfile();
+
+      const data =
+        profileResponse?.profile ||
+        profileResponse?.user ||
+        null;
+
+      if (data) {
+        setProfile({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          location: data.location || "",
+          college: data.college || "",
+          degree: data.degree || "",
+          branch: data.branch || "",
+          graduationYear: data.graduationYear || "",
+          targetRole: data.targetRole || "",
+          bio: data.bio || "",
+          skills: Array.isArray(data.skills)
+            ? data.skills
+            : [],
+          github: data.github || "",
+          linkedin: data.linkedin || "",
+          portfolio: data.portfolio || "",
+        });
+      }
+
+      // Load resume
+      try {
+        const resumeResponse = await api("/resume");
+
+        const resumeData =
+          resumeResponse?.resume ||
+          resumeResponse?.data ||
+          null;
+
+        if (resumeData) {
+          setResume(resumeData);
+        }
+      } catch (resumeError) {
+        console.log("No resume found");
+      }
+    } catch (err) {
+      console.error("Profile loading error:", err);
+
+      setError(
+        err?.message || "Failed to load profile"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRemoveSkill = (skillToRemove) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
+  // =========================
+  // INPUT CHANGE
+  // =========================
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setProfile((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Background Glow */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-blue-200/40 blur-3xl" />
-        <div className="absolute top-1/3 -left-40 h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-indigo-200/30 blur-3xl" />
-      </div>
+  // =========================
+  // SKILLS
+  // =========================
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
-        {/* Header Section */}
-        <section className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600 sm:text-sm">
-              <User size={16} />
-              Account Settings
+  const toggleSkill = (skill) => {
+    setProfile((prev) => {
+      const currentSkills = Array.isArray(prev.skills)
+        ? prev.skills
+        : [];
+
+      if (currentSkills.includes(skill)) {
+        return {
+          ...prev,
+          skills: currentSkills.filter(
+            (item) => item !== skill
+          ),
+        };
+      }
+
+      return {
+        ...prev,
+        skills: [...currentSkills, skill],
+      };
+    });
+  };
+
+  const removeSkill = (skill) => {
+    setProfile((prev) => ({
+      ...prev,
+      skills: prev.skills.filter(
+        (item) => item !== skill
+      ),
+    }));
+  };
+
+  // =========================
+  // SAVE PROFILE
+  // =========================
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setMessage("");
+      setError("");
+
+      await updateProfile(profile);
+
+      setMessage("Profile updated successfully");
+
+      // Dashboard par redirect
+      setTimeout(() => {
+        navigate("/dashboard", {
+          replace: true,
+        });
+      }, 800);
+    } catch (err) {
+      console.error("Save profile error:", err);
+
+      setError(
+        err?.message || "Failed to update profile"
+      );
+
+      setSaving(false);
+    }
+  };
+
+  // =========================
+  // RESUME UPLOAD
+  // =========================
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setError("");
+    setMessage("");
+
+    if (file.type !== "application/pdf") {
+      setError("Only PDF files are allowed");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Resume must be less than 5MB");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const response = await api(
+        "/resume/analyze",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      console.log(
+        "Resume analyze response:",
+        response
+      );
+
+      const newResume =
+        response?.resume ||
+        response?.data?.resume;
+
+      if (newResume) {
+        setResume(newResume);
+      } else {
+        try {
+          const latest = await api("/resume");
+
+          const latestResume =
+            latest?.resume ||
+            latest?.data ||
+            null;
+
+          if (latestResume) {
+            setResume(latestResume);
+          }
+        } catch (err) {
+          console.log(
+            "Could not reload resume"
+          );
+        }
+      }
+
+      setMessage(
+        response?.message ||
+        "Resume analyzed successfully"
+      );
+    } catch (err) {
+      console.error(
+        "Resume upload error:",
+        err
+      );
+
+      setError(
+        err?.message ||
+        "Failed to analyze resume"
+      );
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  // =========================
+  // VIEW RESUME
+  // =========================
+
+  const handleViewResume = () => {
+    const url =
+      resume?.url ||
+      resume?.fileUrl ||
+      resume?.resumeUrl;
+
+    if (!url) {
+      setError(
+        "Resume preview is not available"
+      );
+      return;
+    }
+
+    window.open(url, "_blank");
+  };
+
+  // =========================
+  // LOADING
+  // =========================
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-9 h-9 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+
+          <p className="text-sm text-slate-500">
+            Loading profile...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================
+  // UI
+  // =========================
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+
+      {/* HEADER */}
+      <header className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate("/dashboard")
+              }
+              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+            >
+              <ArrowLeft size={20} />
+            </button>
+
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">
+                My Profile
+              </h1>
+
+              <p className="text-xs text-slate-500 mt-0.5">
+                Manage your CareerPilot profile
+              </p>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
-              User Profile
-            </h1>
-            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-              Manage your academic background, skills, and personal information.
-            </p>
+
           </div>
 
           <button
-            onClick={() => setIsEditing(!isEditing)}
-            className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition active:scale-95 ${isEditing
-              ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm"
-              }`}
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold disabled:opacity-60"
           >
-            {isEditing ? (
-              <>
-                <Save size={16} />
-                Save Profile
-              </>
-            ) : (
-              <>
-                <Edit3 size={16} />
-                Edit Details
-              </>
-            )}
+            <Save size={17} />
+
+            {saving
+              ? "Saving..."
+              : "Save Changes"}
           </button>
-        </section>
 
-        {/* Profile Grid Container */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left Column - Hero Avatar & Quick Details */}
-          <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm text-center">
-              <div className="relative mx-auto h-24 w-24 sm:h-28 sm:w-28">
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-3xl font-bold text-white shadow-md">
-                  {profile.name
-                    ? profile.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                    : "U"}
+        </div>
+      </header>
+
+      {/* MAIN */}
+      <main className="max-w-6xl mx-auto px-6 py-6">
+
+        {/* SUCCESS */}
+        {message && (
+          <div className="mb-5 flex items-center gap-2 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm">
+            <CheckCircle size={17} />
+            {message}
+          </div>
+        )}
+
+        {/* ERROR */}
+        {error && (
+          <div className="mb-5 flex items-center justify-between px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+            <span>{error}</span>
+
+            <button
+              type="button"
+              onClick={() => setError("")}
+            >
+              <X size={17} />
+            </button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          {/* =========================
+              LEFT COLUMN
+          ========================= */}
+
+          <div>
+
+            {/* PROFILE CARD */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6">
+
+              <div className="flex flex-col items-center text-center">
+
+                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 mb-4">
+                  <User size={34} />
                 </div>
-                <button
-                  title="Update Avatar"
-                  className="absolute bottom-0 right-0 rounded-full border-2 border-white bg-slate-900 p-2 text-white shadow hover:bg-slate-800 transition"
-                >
-                  <Camera size={14} />
-                </button>
-              </div>
 
-              <h2 className="mt-4 text-lg font-bold sm:text-xl text-slate-900">
-                {profile.name || "User Name"}
-              </h2>
-              <p className="text-xs font-semibold text-blue-600 sm:text-sm">
-                {profile.role}
-              </p>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {profile.name ||
+                    "Your Name"}
+                </h2>
 
-              <div className="mt-4 flex flex-wrap justify-center gap-2 border-t border-slate-100 pt-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-                  <CheckCircle2 size={13} /> Placement Ready
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
-                  <Sparkles size={13} /> Score 88%
-                </span>
+                <p className="text-sm text-slate-500 mt-1">
+                  {profile.targetRole ||
+                    "Target Role"}
+                </p>
+
+                <div className="w-full mt-6 space-y-3 text-left">
+
+                  <InfoRow
+                    icon={<Mail size={16} />}
+                    value={
+                      profile.email ||
+                      "Email not added"
+                    }
+                  />
+
+                  <InfoRow
+                    icon={<Phone size={16} />}
+                    value={
+                      profile.phone ||
+                      "Phone not added"
+                    }
+                  />
+
+                  <InfoRow
+                    icon={<MapPin size={16} />}
+                    value={
+                      profile.location ||
+                      "Location not added"
+                    }
+                  />
+
+                </div>
+
               </div>
             </div>
 
-            {/* Social Links Card */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">
-                Social Profiles
+            {/* QUICK LINKS */}
+            <div className="bg-white rounded-xl border border-slate-200 p-5 mt-5">
+
+              <h3 className="font-semibold text-slate-900 mb-4">
+                Quick Links
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600">
-                  <FaGithub size={18} className="text-slate-600 shrink-0" />
-                  <span className="truncate">{profile.github}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600">
-                  <FaLinkedin size={18} className="text-blue-600 shrink-0" />
-                  <span className="truncate">{profile.linkedin}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600">
-                  <Globe size={18} className="text-slate-400 shrink-0" />
-                  <span className="truncate">{profile.portfolio}</span>
-                </div>
+
+              <div className="space-y-1">
+
+                <QuickLink
+                  icon={
+                    <Briefcase size={17} />
+                  }
+                  text="Dashboard"
+                  onClick={() =>
+                    navigate("/dashboard")
+                  }
+                />
+
+                <QuickLink
+                  icon={
+                    <FileText size={17} />
+                  }
+                  text="Resume"
+                  onClick={() =>
+                    navigate("/resume")
+                  }
+                />
+
+                <QuickLink
+                  icon={
+                    <GraduationCap
+                      size={17}
+                    />
+                  }
+                  text="Interview Practice"
+                  onClick={() =>
+                    navigate("/interview")
+                  }
+                />
+
               </div>
+
             </div>
 
-            {/* Resume Upload Box */}
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-5 sm:p-6 text-center border-dashed">
-              <FileText size={32} className="mx-auto text-blue-600 mb-2" />
-              <h4 className="text-xs sm:text-sm font-bold text-slate-900">
-                Resume / CV
-              </h4>
-              <p className="mt-1 text-xs text-slate-500">
-                Uploaded: Alex_Resume_2026.pdf
-              </p>
-              <button className="mt-3 w-full rounded-xl bg-blue-600 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition">
-                Update Resume
-              </button>
-            </div>
           </div>
 
-          {/* Right Column - Academic & Personal Info */}
-          <div className="space-y-6 lg:col-span-2">
-            {/* Academic Details Section */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
-                <GraduationCap size={18} className="text-blue-600" />
-                Academic Background
-              </h3>
+          {/* =========================
+              RIGHT COLUMN
+          ========================= */}
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* College / University Select Filter */}
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold text-slate-500">
-                    College / University
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={profile.college}
-                      onChange={(e) => setProfile({ ...profile, college: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500 text-slate-800"
-                    >
-                      <option value="">Select College / University</option>
-                      {COLLEGES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <GraduationCap size={15} className="text-slate-400 shrink-0" />
-                      {profile.college || "Not Specified"}
+          <div className="lg:col-span-2 space-y-5">
+
+            {/* RESUME */}
+            <section className="bg-white rounded-xl border border-slate-200 p-5">
+
+              <div className="flex items-center justify-between mb-5">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                    <FileText size={19} />
+                  </div>
+
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">
+                      Resume
+                    </h2>
+
+                    <p className="text-xs text-slate-500">
+                      Upload and analyze your resume
                     </p>
-                  )}
+                  </div>
+
                 </div>
 
-                {/* Branch / Stream Select Filter */}
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">
-                    Branch / Specialization
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={profile.branch}
-                      onChange={(e) => setProfile({ ...profile, branch: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500 text-slate-800"
-                    >
-                      <option value="">Select Branch</option>
-                      {BRANCHES.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <BookOpen size={15} className="text-slate-400 shrink-0" />
-                      {profile.branch || "Not Specified"}
-                    </p>
-                  )}
-                </div>
-
-                {/* Graduation Year Select Filter */}
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">
-                    Graduation Year
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={profile.gradYear}
-                      onChange={(e) => setProfile({ ...profile, gradYear: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500 text-slate-800"
-                    >
-                      <option value="">Select Graduation Year</option>
-                      {GRADUATION_YEARS.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <Calendar size={15} className="text-slate-400 shrink-0" />
-                      {profile.gradYear || "Not Specified"}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Personal Information */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-              <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
-                Personal Details
-              </h3>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">Full Name</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profile.name}
-                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500"
-                    />
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800">{profile.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">Primary Email</label>
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500"
-                    />
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <Mail size={14} className="text-slate-400" /> {profile.email}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">Phone Number</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500"
-                    />
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <Phone size={14} className="text-slate-400" /> {profile.phone}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-500">Location</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profile.location}
-                      onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                      className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500"
-                    />
-                  ) : (
-                    <p className="mt-1 text-xs sm:text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                      <MapPin size={14} className="text-slate-400" /> {profile.location}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Technical Skills Section */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="text-base font-bold text-slate-900">
-                  Technical Skills & Tools
-                </h3>
-                <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
-                  {skills.length} Skills
-                </span>
-              </div>
-
-              {/* Add Skill Form */}
-              <form onSubmit={handleAddSkill} className="mb-4 flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add a new skill (e.g. Next.js)..."
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm outline-none focus:border-blue-500"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                <label
+                  className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white ${uploading
+                      ? "bg-blue-400"
+                      : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                 >
-                  <Plus size={16} /> Add
-                </button>
-              </form>
 
-              {/* Skill Badges */}
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-2xs"
-                  >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSkill(skill)}
-                      className="text-slate-400 hover:text-red-500 transition"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </span>
-                ))}
+                  <Upload size={16} />
+
+                  {uploading
+                    ? "Analyzing..."
+                    : resume
+                      ? "Replace"
+                      : "Upload Resume"}
+
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    className="hidden"
+                    onChange={
+                      handleResumeUpload
+                    }
+                    disabled={uploading}
+                  />
+
+                </label>
+
               </div>
+
+              {resume ? (
+
+                <div className="border border-slate-200 rounded-lg p-4">
+
+                  <div className="flex items-center justify-between">
+
+                    <div className="flex items-center gap-3">
+
+                      <div className="w-11 h-11 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <FileText size={22} />
+                      </div>
+
+                      <div>
+
+                        <p className="font-medium text-slate-900 text-sm">
+                          {resume.fileName ||
+                            resume.filename ||
+                            resume.name ||
+                            "My Resume.pdf"}
+                        </p>
+
+                        {resume.score !=
+                          null && (
+                            <p className="text-xs text-blue-600 font-medium mt-1">
+                              ATS Score:{" "}
+                              {resume.score}/100
+                            </p>
+                          )}
+
+                        {resume.atsScore !=
+                          null &&
+                          resume.score ==
+                          null && (
+                            <p className="text-xs text-blue-600 font-medium mt-1">
+                              ATS Score:{" "}
+                              {
+                                resume.atsScore
+                              }
+                              /100
+                            </p>
+                          )}
+
+                      </div>
+
+                    </div>
+
+                    {(resume.url ||
+                      resume.fileUrl ||
+                      resume.resumeUrl) && (
+                        <button
+                          type="button"
+                          onClick={
+                            handleViewResume
+                          }
+                          className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600"
+                        >
+                          <Eye size={17} />
+                        </button>
+                      )}
+
+                  </div>
+
+                </div>
+
+              ) : (
+
+                <div className="border border-dashed border-slate-300 rounded-lg p-7 text-center">
+
+                  <div className="w-12 h-12 mx-auto rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 mb-3">
+                    <FileText size={24} />
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    No resume uploaded
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-1">
+                    Upload your resume in PDF format
+                  </p>
+
+                  <p className="text-xs text-slate-400 mt-2">
+                    PDF • Maximum 5MB
+                  </p>
+
+                </div>
+
+              )}
+
+            </section>
+
+            {/* PERSONAL INFORMATION */}
+            <Section
+              title="Personal Information"
+              icon={<User size={18} />}
+            >
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <Input
+                  label="Full Name"
+                  name="name"
+                  value={profile.name}
+                  onChange={handleChange}
+                  icon={<User size={16} />}
+                />
+
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={profile.email}
+                  onChange={handleChange}
+                  icon={<Mail size={16} />}
+                />
+
+                <Input
+                  label="Phone"
+                  name="phone"
+                  value={profile.phone}
+                  onChange={handleChange}
+                  icon={<Phone size={16} />}
+                />
+
+                <div>
+
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Location
+                  </label>
+
+                  <div className="relative">
+
+                    <MapPin
+                      size={16}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    />
+
+                    <select
+                      name="location"
+                      value={profile.location}
+                      onChange={handleChange}
+                      className="w-full appearance-none pl-10 pr-9 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white outline-none cursor-pointer focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+
+                      <option value="">
+                        Select Location
+                      </option>
+
+                      {locations.map(
+                        (location) => (
+                          <option
+                            key={location}
+                            value={location}
+                          >
+                            {location}
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs">
+                      ▼
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </Section>
+
+            {/* EDUCATION */}
+            <Section
+              title="Education"
+              icon={
+                <GraduationCap size={18} />
+              }
+            >
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <Input
+                  label="College / University"
+                  name="college"
+                  value={profile.college}
+                  onChange={handleChange}
+                  icon={
+                    <GraduationCap
+                      size={16}
+                    />
+                  }
+                />
+
+                <Input
+                  label="Degree"
+                  name="degree"
+                  value={profile.degree}
+                  onChange={handleChange}
+                  placeholder="e.g. B.Tech"
+                />
+
+                <Input
+                  label="Branch"
+                  name="branch"
+                  value={profile.branch}
+                  onChange={handleChange}
+                  placeholder="e.g. Computer Science"
+                />
+
+                <Input
+                  label="Graduation Year"
+                  name="graduationYear"
+                  value={
+                    profile.graduationYear
+                  }
+                  onChange={handleChange}
+                  placeholder="2026"
+                />
+
+              </div>
+
+            </Section>
+
+            {/* CAREER */}
+            <Section
+              title="Career Information"
+              icon={
+                <Briefcase size={18} />
+              }
+            >
+
+              <div className="space-y-4">
+
+                <Input
+                  label="Target Role"
+                  name="targetRole"
+                  value={profile.targetRole}
+                  onChange={handleChange}
+                  icon={
+                    <Briefcase size={16} />
+                  }
+                  placeholder="e.g. Full Stack Developer"
+                />
+
+                <div>
+
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Bio
+                  </label>
+
+                  <textarea
+                    name="bio"
+                    value={profile.bio}
+                    onChange={handleChange}
+                    rows={4}
+                    placeholder="Tell recruiters a little about yourself..."
+                    className="w-full px-3.5 py-3 border border-slate-300 rounded-lg text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 resize-none"
+                  />
+
+                </div>
+
+              </div>
+
+            </Section>
+
+            {/* SKILLS */}
+            <Section
+              title="Skills"
+              icon={<Code2 size={18} />}
+            >
+
+              <p className="text-xs text-slate-500 mb-4">
+                Click skills to select or unselect
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+
+                {availableSkills.map(
+                  (skill) => {
+
+                    const selected =
+                      profile.skills.includes(
+                        skill
+                      );
+
+                    return (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() =>
+                          toggleSkill(
+                            skill
+                          )
+                        }
+                        className={
+                          selected
+                            ? "px-3.5 py-2 rounded-lg text-sm font-medium border bg-blue-600 text-white border-blue-600"
+                            : "px-3.5 py-2 rounded-lg text-sm font-medium border bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                        }
+                      >
+                        {selected && "✓ "}
+                        {skill}
+                      </button>
+                    );
+                  }
+                )}
+
+              </div>
+
+              {profile.skills.length >
+                0 && (
+
+                  <div className="mt-5 pt-4 border-t border-slate-200">
+
+                    <p className="text-sm font-medium text-slate-700 mb-3">
+                      Selected Skills
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+
+                      {profile.skills.map(
+                        (skill) => (
+
+                          <div
+                            key={skill}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-sm"
+                          >
+
+                            <span>
+                              {skill}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeSkill(
+                                  skill
+                                )
+                              }
+                              className="hover:text-blue-900"
+                            >
+                              <X size={14} />
+                            </button>
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  </div>
+
+                )}
+
+            </Section>
+
+            {/* SOCIAL */}
+            <Section
+              title="Social & Portfolio"
+              icon={<Globe size={18} />}
+            >
+
+              <div className="space-y-4">
+
+                <Input
+                  label="GitHub"
+                  name="github"
+                  value={profile.github}
+                  onChange={handleChange}
+                  icon={
+                    <Code2 size={16} />
+                  }
+                  placeholder="https://github.com/username"
+                />
+
+                <Input
+                  label="LinkedIn"
+                  name="linkedin"
+                  value={profile.linkedin}
+                  onChange={handleChange}
+                  icon={
+                    <Globe size={16} />
+                  }
+                  placeholder="https://linkedin.com/in/username"
+                />
+
+                <Input
+                  label="Portfolio"
+                  name="portfolio"
+                  value={profile.portfolio}
+                  onChange={handleChange}
+                  icon={
+                    <Globe size={16} />
+                  }
+                  placeholder="https://yourportfolio.com"
+                />
+
+              </div>
+
+            </Section>
+
+            {/* BOTTOM SAVE */}
+            <div className="flex justify-end pb-8">
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm disabled:opacity-60"
+              >
+
+                <Save size={17} />
+
+                {saving
+                  ? "Saving..."
+                  : "Save Changes"}
+
+              </button>
+
             </div>
+
           </div>
         </div>
       </main>
     </div>
   );
-}
+};
+
+// =========================
+// SECTION
+// =========================
+
+const Section = ({
+  title,
+  icon,
+  children,
+}) => {
+  return (
+    <section className="bg-white rounded-xl border border-slate-200 p-5">
+
+      <div className="flex items-center gap-2 mb-5">
+
+        <div className="text-blue-600">
+          {icon}
+        </div>
+
+        <h2 className="text-base font-semibold text-slate-900">
+          {title}
+        </h2>
+
+      </div>
+
+      {children}
+
+    </section>
+  );
+};
+
+// =========================
+// INPUT
+// =========================
+
+const Input = ({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  icon,
+  placeholder,
+}) => {
+  return (
+    <div>
+
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        {label}
+      </label>
+
+      <div className="relative">
+
+        {icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            {icon}
+          </div>
+        )}
+
+        <input
+          type={type}
+          name={name}
+          value={value || ""}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full ${icon ? "pl-10" : "pl-3.5"
+            } pr-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
+        />
+
+      </div>
+
+    </div>
+  );
+};
+
+// =========================
+// INFO ROW
+// =========================
+
+const InfoRow = ({
+  icon,
+  value,
+}) => {
+  return (
+    <div className="flex items-center gap-3 text-sm text-slate-600">
+
+      <span className="text-slate-400 shrink-0">
+        {icon}
+      </span>
+
+      <span className="truncate">
+        {value}
+      </span>
+
+    </div>
+  );
+};
+
+// =========================
+// QUICK LINK
+// =========================
+
+const QuickLink = ({
+  icon,
+  text,
+  onClick,
+}) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition text-left"
+    >
+      {icon}
+      <span>{text}</span>
+    </button>
+  );
+};
+
+export default Profile;
