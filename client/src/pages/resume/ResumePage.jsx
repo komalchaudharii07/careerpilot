@@ -199,7 +199,7 @@ export default function ResumePage() {
       const response =
         await axios.post(
 
-          "http://localhost:5000/api/resume/analyze",
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/resume/analyze`,
 
           formData,
 
@@ -353,9 +353,9 @@ export default function ResumePage() {
 
                   className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 transition ${dragActive
 
-                      ? "border-blue-600 bg-blue-50/50"
+                    ? "border-blue-600 bg-blue-50/50"
 
-                      : "border-slate-200 bg-slate-50/50 hover:bg-slate-50"
+                    : "border-slate-200 bg-slate-50/50 hover:bg-slate-50"
 
                     }`}
 
@@ -498,9 +498,9 @@ export default function ResumePage() {
 
                 className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition ${!file || loading
 
-                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                  ? "cursor-not-allowed bg-slate-100 text-slate-400"
 
-                    : "bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.99] cursor-pointer"
+                  : "bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.99] cursor-pointer"
 
                   }`}
 

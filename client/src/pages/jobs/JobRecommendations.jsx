@@ -16,7 +16,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // ======================================================
 // OPTIONS
@@ -174,8 +175,8 @@ function JobCard({
                 : "Save job"
             }
             className={`mt-2 flex h-10 w-10 items-center justify-center rounded-xl border transition ${isBookmarked
-                ? "border-blue-200 bg-blue-50 text-blue-600"
-                : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+              ? "border-blue-200 bg-blue-50 text-blue-600"
+              : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
               }`}
           >
             {isBookmarked ? (
@@ -203,8 +204,8 @@ function JobCard({
           type="button"
           onClick={() => onBookmark(job)}
           className={`flex h-10 w-10 items-center justify-center rounded-xl border ${isBookmarked
-              ? "border-blue-200 bg-blue-50 text-blue-600"
-              : "border-slate-200 text-slate-500"
+            ? "border-blue-200 bg-blue-50 text-blue-600"
+            : "border-slate-200 text-slate-500"
             }`}
         >
           {isBookmarked ? (

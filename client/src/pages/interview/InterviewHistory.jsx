@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api/interview";
+const API_URL = "https://careerpilot-wcpq.onrender.com/api/interview";
 
 export default function InterviewHistory({
   onStartNewInterview,

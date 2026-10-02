@@ -12,6 +12,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+const API_URL = "https://careerpilot-wcpq.onrender.com";
+
 export default function AICareerAssistant() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -65,7 +67,7 @@ export default function AICareerAssistant() {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/ai/history",
+          `${API_URL}/api/ai/history`,
           {
             method: "GET",
             headers: {
@@ -151,7 +153,7 @@ export default function AICareerAssistant() {
       // ==========================================
 
       const response = await fetch(
-        "http://localhost:5000/api/ai/chat",
+        `${API_URL}/api/ai/chat`,
         {
           method: "POST",
 
@@ -236,7 +238,7 @@ export default function AICareerAssistant() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/ai/history",
+        `${API_URL}/api/ai/history`,
         {
           method: "DELETE",
           headers: {

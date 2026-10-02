@@ -563,8 +563,8 @@ export default function InterviewPage() {
                       )
                     }
                     className={`w-full rounded-2xl border p-5 text-left transition duration-200 sm:p-6 ${active
-                        ? "border-blue-500 bg-blue-50/60 shadow-md shadow-blue-100"
-                        : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm"
+                      ? "border-blue-500 bg-blue-50/60 shadow-md shadow-blue-100"
+                      : "border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm"
                       }`}
                   >
 
@@ -572,8 +572,8 @@ export default function InterviewPage() {
 
                       <div
                         className={`flex h-11 w-11 items-center justify-center rounded-xl ${active
-                            ? "bg-blue-600 text-white"
-                            : "bg-slate-100 text-slate-600"
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600"
                           }`}
                       >
 
@@ -1328,8 +1328,8 @@ function InterviewSession({
                 onClick={toggleMic}
                 disabled={submitting}
                 className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition sm:w-auto ${isListening
-                    ? "animate-pulse bg-red-100 text-red-600"
-                    : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  ? "animate-pulse bg-red-100 text-red-600"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                   }`}
               >
 
@@ -1721,12 +1721,12 @@ function InterviewResult({
 
                             <span
                               className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${item.evaluation ===
-                                  "correct"
-                                  ? "bg-emerald-50 text-emerald-600"
-                                  : item.evaluation ===
-                                    "partially-correct"
-                                    ? "bg-amber-50 text-amber-600"
-                                    : "bg-red-50 text-red-600"
+                                "correct"
+                                ? "bg-emerald-50 text-emerald-600"
+                                : item.evaluation ===
+                                  "partially-correct"
+                                  ? "bg-amber-50 text-amber-600"
+                                  : "bg-red-50 text-red-600"
                                 }`}
                             >
 
